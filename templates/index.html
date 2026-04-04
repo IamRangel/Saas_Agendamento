@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lash Design - Agendamento Online</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <style>
+        :root {
+            --primary: #00a3ff;
+            --bg-main: #05070a;
+            --bg-card: #0d121b;
+            --border: #1e293b;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --success: #00e676;
+        }
+
+        .text-muted { color: var(--text-muted) !important; }
+        label { color: #ffffff !important; }
+        
+        ::placeholder {
+            color: #64748b !important;
+            opacity: 1;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container-app {
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .brand-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .card-glass {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .form-control {
+            background: #161f2e !important;
+            border: 1px solid var(--border) !important;
+            color: white !important;
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 4px rgba(0, 163, 255, 0.1);
+        }
+
+        /* Calendário */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-top: 15px;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            background: #161f2e;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .cal-day:hover:not(.empty) { background: var(--border); }
+        .cal-day.active { background: var(--primary); font-weight: bold; box-shadow: 0 0 15px rgba(0, 163, 255, 0.3); }
+        
+        .cal-day.has-slots::after {
+            content: '';
+            width: 4px; height: 4px; 
+            background: var(--primary); 
+            border-radius: 50%; 
+            position: absolute; 
+            bottom: 5px;
+        }
+
+        /* Horários */
+        .slot-pill {
+            background: #161f2e;
+            border: 1px solid var(--border);
+            padding: 10px 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            flex: 1 1 30%;
+            color: white;
+        }
+
+        .slot-pill:hover { border-color: var(--primary); color: var(--primary); }
+        .slot-pill.selected { background: var(--primary); color: white; border-color: var(--primary); font-weight: bold; }
+
+        .btn-confirm {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 18px;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 25px;
+            transition: 0.3s;
+        }
+
+        .btn-confirm:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
+
+        .status-box {
+            background: rgba(0, 163, 255, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-app">
+    <div class="brand-logo">
+        <div class="brand-text">LASH DESIGN</div>
+        <p class="text-muted small">Agende seu momento de beleza</p>
+    </div>
+
+    <div class="card-glass">
+        <div id="step-1">
+            <label class="text-muted small d-block mb-3 text-center">Informe seu WhatsApp para começar</label>
+            <input type="tel" id="user-tel" class="form-control mb-3" placeholder="(00) 00000-0000">
+            <button onclick="verificarCliente()" class="btn-confirm">Verificar Horários</button>
+        </div>
+
+        <div id="step-2" class="d-none animate__animated animate__fadeIn">
+            <div id="status-existente" class="status-box d-none">
+                <span class="small d-block text-white">Você já possui um agendamento!</span>
+                <strong id="data-agendada" class="text-primary"></strong>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-sm text-white" onclick="mudarMes(-1)"><i class="bi bi-chevron-left"></i></button>
+                <span id="label-mes" class="fw-bold text-uppercase small" style="color: var(--primary)"></span>
+                <button class="btn btn-sm text-white" onclick="mudarMes(1)"><i class="bi bi-chevron-right"></i></button>
+            </div>
+
+            <div class="calendar-grid text-muted" style="font-size: 0.7rem; font-weight: 800; text-align: center;">
+                <div>D</div><div>S</div><div>T</div><div>Q</div><div>Q</div><div>S</div><div>S</div>
+            </div>
+            <div id="calendar-days" class="calendar-grid"></div>
+
+            <div id="box-slots" class="mt-4 d-none">
+                <label class="text-muted small mb-2">Escolha o horário:</label>
+                <div id="lista-horarios" class="d-flex flex-wrap gap-2"></div>
+                
+                <input type="text" id="user-nome" class="form-control mt-4" placeholder="Seu nome completo">
+                <button id="btn-finalizar" onclick="confirmarAgendamento()" class="btn-confirm" disabled>Confirmar Agendamento</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = window.location.origin;
+    let grade = {};
+    let dataCalendario = new Date();
+    let horarioSelecionado = null;
+
+    async function verificarCliente() {
+        const tel = document.getElementById('user-tel').value;
+        if(tel.length < 10) return alert("Digite um WhatsApp válido");
+
+        try {
+            // Busca grade de horários disponíveis
+            const resG = await fetch(`${API_URL}/agendamentos/horarios`);
+            grade = await resG.json();
+
+            // Verifica se cliente já tem agendamento ativo
+            const resC = await fetch(`${API_URL}/agendamentos/verificar?telefone=${tel}`);
+            const status = await resC.json();
+
+            document.getElementById('step-1').classList.add('d-none');
+            document.getElementById('step-2').classList.remove('d-none');
+            
+            if(status.possui_agendamento) {
+                document.getElementById('status-existente').classList.remove('d-none');
+                const dt = new Date(status.detalhes.data_hora);
+                document.getElementById('data-agendada').innerText = dt.toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'});
+            }
+            
+            renderCalendario();
+        } catch (e) {
+            console.error("Erro ao verificar cliente", e);
+            alert("Erro ao conectar com o servidor.");
+        }
+    }
+
+    function renderCalendario() {
+        const grid = document.getElementById('calendar-days');
+        grid.innerHTML = '';
+        document.getElementById('label-mes').innerText = dataCalendario.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+        const ano = dataCalendario.getFullYear();
+        const mes = dataCalendario.getMonth();
+        const primDia = new Date(ano, mes, 1).getDay();
+        const ultDia = new Date(ano, mes + 1, 0).getDate();
+
+        for (let i = 0; i < primDia; i++) grid.innerHTML += '<div class="cal-day empty"></div>';
+        for (let d = 1; d <= ultDia; d++) {
+            const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const temVaga = grade[dataStr] ? 'has-slots' : '';
+            grid.innerHTML += `<div class="cal-day ${temVaga}" onclick="selecionarDia('${dataStr}', this)">${d}</div>`;
+        }
+    }
+
+    function selecionarDia(data, el) {
+        document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('active'));
+        el.classList.add('active');
+        
+        const box = document.getElementById('box-slots');
+        const lista = document.getElementById('lista-horarios');
+        box.classList.remove('d-none');
+        lista.innerHTML = '';
+
+        if(grade[data]) {
+            grade[data].forEach(h => {
+                lista.innerHTML += `<div class="slot-pill" onclick="selecionarHorario(${h.id}, this)">${h.hora}</div>`;
+            });
+        } else {
+            lista.innerHTML = '<p class="text-muted small">Nenhum horário disponível nesta data.</p>';
+        }
+    }
+
+    function selecionarHorario(id, el) {
+        document.querySelectorAll('.slot-pill').forEach(p => p.classList.remove('selected'));
+        el.classList.add('selected');
+        horarioSelecionado = id;
+        document.getElementById('btn-finalizar').disabled = false;
+    }
+
+    async function confirmarAgendamento() {
+        const nome = document.getElementById('user-nome').value;
+        const tel = document.getElementById('user-tel').value;
+        
+        if(!nome) return alert("Por favor, digite seu nome");
+        
+        const res = await fetch(`${API_URL}/agendamentos/criar?nome=${nome}&telefone=${tel}&horario_id=${horarioSelecionado}`, {
+            method: 'POST'
+        });
+
+        if(res.ok) {
+            alert("Agendamento realizado com sucesso! Esperamos por você.");
+            location.reload();
+        } else {
+            alert("Erro ao agendar. Tente outro horário.");
+        }
+    }
+
+    function mudarMes(n) { 
+        dataCalendario.setMonth(dataCalendario.getMonth() + n); 
+        renderCalendario();
+    }
+</script>
+</body>
+</html>

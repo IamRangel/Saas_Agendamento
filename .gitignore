@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+app.db
+consolidado_textos.txt
+.env
+codes.py
+codes.txt
+codes_esp.py
