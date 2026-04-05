@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lash Design - Admin Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        :root {
+            --primary: #00a3ff;
+            --primary-hover: #0077bb;
+            --bg-main: #05070a;
+            --bg-card: #0d121b;
+            --bg-accent: #161f2e;
+            --border: #1e293b;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --danger: #ff4d4d;
+            --success: #00e676;
+            --glass: rgba(13, 18, 27, 0.85);
+        }
+
+        /* Isso vai forçar TODOS os textos que usam 'text-muted' a ficarem claros */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Garante que os labels de formulários fiquem brancos */
+label {
+    color: #ffffff !important;
+}
+
+/* Melhora a visibilidade dos placeholders (o texto dentro dos inputs antes de digitar) */
+::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+}
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding-bottom: 50px;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Refinada */
+        .navbar-custom {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border);
+            padding: 18px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Cards e Containers */
+        .card-glass {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            margin-bottom: 24px;
+            transition: transform 0.2s ease;
+        }
+
+        .card-glass:hover {
+            border-color: var(--primary);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--primary);
+        }
+
+        /* Inputs e Botões Customizados */
+        .form-control {
+            background: var(--bg-main) !important;
+            border: 1px solid var(--border) !important;
+            color: white !important;
+            border-radius: 14px;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(0, 163, 255, 0.15);
+        }
+
+        .btn-primary-custom {
+            background: var(--primary);
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 163, 255, 0.3);
+        }
+
+        /* Calendário e Grade */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: var(--bg-accent);
+            border: 1px solid transparent;
+        }
+
+        .cal-day:hover { 
+            background: var(--border);
+            border-color: var(--primary);
+        }
+
+        .cal-day.active { 
+            background: var(--primary); 
+            color: white; 
+            font-weight: bold; 
+            box-shadow: 0 0 15px rgba(0, 163, 255, 0.4);
+        }
+
+        .cal-day.has-slots::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .grade-pill {
+            background: var(--bg-accent);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        /* Tabela de Agendamentos */
+        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+        .table-custom tr { background: var(--bg-accent); transition: transform 0.2s ease; }
+        .table-custom tr:hover { transform: scale(1.01); background: #1c2738; }
+        .table-custom td { padding: 20px; border: none; vertical-align: middle; }
+        .table-custom tr td:first-child { border-radius: 16px 0 0 16px; border-left: 3px solid var(--primary); }
+        .table-custom tr td:last-child { border-radius: 0 16px 16px 0; }
+
+        .client-name { font-weight: 700; font-size: 1.05rem; color: #fff; }
+        .client-info { color: var(--text-muted); font-size: 0.85rem; }
+
+        .btn-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            background: rgba(248, 81, 73, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(248, 81, 73, 0.2);
+        }
+
+        .btn-action:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar-custom d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+        <div style="width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-gem text-white" style="font-size: 1.2rem;"></i>
+        </div>
+        <span class="brand-text">LASH DESIGN</span>
+    </div>
+    <div class="d-flex align-items-center gap-4">
+        <span class="text-muted small d-none d-md-inline">Admin: <strong>Gustavo</strong></span>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/chat" class="btn btn-primary">
+            <i class="bi bi-chat-dots"></i> CHAT
+        </a>
+    <button onclick="logout()" class="btn btn-danger">
+        <i class="bi bi-box-arrow-right"></i> SAIR
+    </button>
+</div>
+</nav>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card-glass">
+                <div class="section-title"><i class="bi bi-plus-circle-fill"></i> Gerar Grade</div>
+                <div class="mb-3">
+                    <label class="text-muted small mb-2">Selecione a Data</label>
+                    <input type="date" id="g-data" class="form-control">
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col">
+                        <label class="text-muted small mb-2">Início</label>
+                        <input type="time" id="g-inicio" class="form-control" value="08:00">
+                    </div>
+                    <div class="col">
+                        <label class="text-muted small mb-2">Fim</label>
+                        <input type="time" id="g-fim" class="form-control" value="18:00">
+                    </div>
+                </div>
+                <button class="btn btn-primary-custom w-100" onclick="gerarGrade()">Criar Horários</button>
+            </div>
+
+            <div class="card-glass">
+                <div class="section-title"><i class="bi bi-calendar3-range-fill"></i> Explorar Grade</div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4 bg-black p-2 rounded-3">
+                    <button class="btn btn-sm text-white" onclick="mudarMes(-1)"><i class="bi bi-chevron-left"></i></button>
+                    <span id="label-mes" class="fw-bold text-uppercase" style="letter-spacing: 1px; font-size: 0.8rem; color: var(--primary);"></span>
+                    <button class="btn btn-sm text-white" onclick="mudarMes(1)"><i class="bi bi-chevron-right"></i></button>
+                </div>
+
+                <div class="calendar-grid text-muted small mb-3 fw-bold">
+                    <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SAB</div>
+                </div>
+                <div id="calendar-days" class="calendar-grid"></div>
+
+                <div id="box-horarios" class="mt-4 d-none animate__animated animate__fadeIn">
+                    <p class="small text-muted mb-3">Vagas para <span id="data-view" class="text-white fw-bold">--/--</span>:</p>
+                    <div id="lista-vagas" class="d-flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card-glass h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="section-title mb-0"><i class="bi bi-stars"></i> Agendamentos Ativos</div>
+                    <span class="badge rounded-pill bg-primary" style="font-size: 0.7rem;" id="count-agendamentos">0 Ativos</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <tbody id="lista-clientes">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuração de URL dinâmica para Local e Deploy
+    const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:8000"
+    : window.location.origin;
+
+    const token = localStorage.getItem('token_phd');
+    let dataCalendario = new Date();
+    let gradeDados = {};
+
+    // --- AJUSTE DE SEGURANÇA E REDIRECIONAMENTO ---
+    // Se não houver token, volta para a raiz (/) onde está o login
+    if (!token) {
+        window.location.href = "/";
+    }
+
+    function logout() { 
+        localStorage.removeItem('token_phd'); 
+        window.location.href = "/"; // Volta para a rota do Flask
+    }
+
+    async function carregarDados() {
+        try {
+            // Busca horários disponíveis (público)
+            const resG = await fetch(`${API_URL}/agendamentos/horarios`);
+            gradeDados = await resG.json();
+            renderCalendario();
+            
+            // Busca agendamentos de clientes (protegido por token)
+            const resA = await fetch(`${API_URL}/admin/agendamentos`, { 
+                headers: {'Authorization': `Bearer ${token}`} 
+            });
+
+            // Se o token expirou ou for inválido, o servidor retorna 401
+            if (resA.status === 401) {
+                logout();
+                return;
+            }
+
+            const agendamentos = await resA.json();
+            
+            const lista = document.getElementById('lista-clientes');
+            const countElem = document.getElementById('count-agendamentos');
+            
+            if (countElem) countElem.innerText = `${agendamentos.length} Ativos`;
+            
+            lista.innerHTML = agendamentos.length ? '' : '<div class="text-center p-5 text-muted">Nenhum agendamento encontrado.</div>';
+            
+            agendamentos.forEach(a => {
+                const dt = new Date(a.data_hora);
+                lista.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-white">${dt.toLocaleDateString('pt-BR')}</div>
+                            <div class="client-info"><i class="bi bi-clock"></i> ${dt.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</div>
+                        </td>
+                        <td>
+                            <div class="client-name">${a.nome}</div>
+                            <a href="https://wa.me/55${a.telefone.replace(/\D/g,'')}" target="_blank" class="text-success small text-decoration-none fw-bold">
+                                <i class="bi bi-whatsapp"></i> ${a.telefone}
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-action ms-auto" onclick="deletarAgendamento(${a.id})">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) { 
+            console.error("Erro ao carregar dados", e); 
+        }
+    }
+
+    function renderCalendario() {
+        const grid = document.getElementById('calendar-days');
+        const label = document.getElementById('label-mes');
+        if (!grid || !label) return;
+
+        grid.innerHTML = '';
+        label.innerText = dataCalendario.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+        
+        const ano = dataCalendario.getFullYear();
+        const mes = dataCalendario.getMonth();
+        const primeiroDia = new Date(ano, mes, 1).getDay();
+        const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+
+        for (let i = 0; i < primeiroDia; i++) grid.innerHTML += '<div class="cal-day empty"></div>';
+
+        for (let dia = 1; dia <= ultimoDia; dia++) {
+            const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+            const temVaga = gradeDados[dataStr] ? 'has-slots' : '';
+            grid.innerHTML += `<div class="cal-day ${temVaga}" onclick="verDia('${dataStr}', this)">${dia}</div>`;
+        }
+    }
+
+    function verDia(data, el) {
+        document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('active'));
+        el.classList.add('active');
+        
+        const box = document.getElementById('box-horarios');
+        const dataView = document.getElementById('data-view');
+        
+        if (box) box.classList.remove('d-none');
+        if (dataView) dataView.innerText = data.split('-').reverse().join('/');
+        
+        const lista = document.getElementById('lista-vagas');
+        lista.innerHTML = '';
+        if(gradeDados[data]) {
+            gradeDados[data].forEach(h => {
+                lista.innerHTML += `
+                    <div class="grade-pill">
+                        <span class="fw-bold">${h.hora}</span>
+                        <i class="bi bi-x-circle-fill text-danger" style="cursor:pointer" onclick="excluirGrade(${h.id})"></i>
+                    </div>`;
+            });
+        } else { 
+            lista.innerHTML = '<small class="text-muted">Nenhum horário criado.</small>'; 
+        }
+    }
+
+    function mudarMes(n) { 
+        dataCalendario.setMonth(dataCalendario.getMonth() + n); 
+        renderCalendario(); 
+    }
+
+    async function gerarGrade() {
+        const dataInput = document.getElementById('g-data').value;
+        const inicioInput = document.getElementById('g-inicio').value;
+        const fimInput = document.getElementById('g-fim').value;
+
+        if (!dataInput || !inicioInput || !fimInput) {
+            alert("Preencha todos os campos da grade.");
+            return;
+        }
+
+        const p = new URLSearchParams({ 
+            data: dataInput, 
+            inicio: inicioInput, 
+            fim: fimInput, 
+            intervalo: 60 
+        });
+
+        const res = await fetch(`${API_URL}/admin/gerar-grade?${p}`, { 
+            method: 'POST', 
+            headers: {'Authorization': `Bearer ${token}`} 
+        });
+
+        if (res.ok) {
+            carregarDados();
+            alert("Grade gerada com sucesso!");
+        } else {
+            alert("Erro ao gerar grade.");
+        }
+    }
+
+    async function excluirGrade(id) {
+        if(confirm("Remover este horário disponível?")) {
+            await fetch(`${API_URL}/admin/grade/${id}`, { 
+                method: 'DELETE', 
+                headers: {'Authorization': `Bearer ${token}`} 
+            });
+            carregarDados();
+            document.getElementById('box-horarios').classList.add('d-none');
+        }
+    }
+
+    async function deletarAgendamento(id) {
+        if(confirm("Deseja realmente cancelar este cliente?")) {
+            const res = await fetch(`${API_URL}/admin/agendamentos/${id}`, { 
+                method: 'DELETE', 
+                headers: {'Authorization': `Bearer ${token}`} 
+            });
+            if (res.ok) carregarDados();
+        }
+    }
+
+    window.onload = carregarDados;
+</script>
+</body>
+</html>
