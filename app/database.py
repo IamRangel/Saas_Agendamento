@@ -15,7 +15,10 @@ def get_database_url():
     # Ajuste obrigatório para SQLAlchemy 2.0+ em serviços de nuvem (Heroku/Render/Azure)
     if url and url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
-        
+    # Driver Psycopg 3 (wheels amplos; evita build do psycopg2 em Python novo)
+    if url and url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+
     # Se não houver URL de ambiente, usa SQLite local
     return url or "sqlite:///app.db"
 

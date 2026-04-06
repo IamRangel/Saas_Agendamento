@@ -1,8 +1,12 @@
+import logging
+
 from flask import Blueprint, request, jsonify
-from app.database import db  # Importamos o db global em vez do SessionLocal
+
+from app.database import db
 from app.models import Usuario
-from app.auth import create_token, verify_password, get_password_hash
-import datetime
+from app.auth import create_token, verify_password, get_password_hash, decode_token
+
+log = logging.getLogger("phd.auth")
 
 # Definindo o Blueprint
 auth_bp = Blueprint("auth", __name__)
@@ -80,3 +84,33 @@ def login():
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
     return jsonify({"mensagem": "Logout realizado (Elimine o token no frontend)"}), 200
+
+
+@auth_bp.route("/alterar-senha", methods=["POST"])
+def alterar_senha():
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return jsonify({"erro": "Token ausente."}), 401
+    payload = decode_token(auth[7:].strip())
+    if not payload:
+        return jsonify({"erro": "Token inválido ou expirado."}), 401
+
+    data = request.get_json() or {}
+    atual = data.get("senha_atual") or ""
+    nova = data.get("senha_nova") or ""
+    if len(nova) < 6:
+        return jsonify({"erro": "Nova senha deve ter pelo menos 6 caracteres."}), 400
+
+    usuario = Usuario.query.filter_by(username=payload.get("sub")).first()
+    if not usuario or not verify_password(atual, usuario.password_hash):
+        return jsonify({"erro": "Senha atual incorreta."}), 400
+
+    try:
+        usuario.password_hash = get_password_hash(nova)
+        db.session.commit()
+        log.info("senha_alterada user=%s", usuario.username)
+        return jsonify({"mensagem": "Senha alterada com sucesso."}), 200
+    except Exception as e:
+        db.session.rollback()
+        log.exception("alterar_senha")
+        return jsonify({"erro": str(e)}), 500

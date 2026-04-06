@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <link rel="icon" type="image/png" href="/static/img/logo_aba.png">
+    <link rel="stylesheet" href="/static/css/theme.css">
 
     <style>
         :root {
@@ -128,6 +131,24 @@ label {
             box-shadow: 0 8px 20px rgba(0, 163, 255, 0.3);
         }
 
+        .btn-outline-month {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 14px;
+            padding: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-month:hover {
+            background: rgba(0, 163, 255, 0.12);
+            color: #e0f2fe;
+            border-color: var(--primary-hover);
+        }
+
         /* Calendário e Grade */
         .calendar-grid {
             display: grid;
@@ -137,6 +158,7 @@ label {
         }
 
         .cal-day {
+            position: relative;
             aspect-ratio: 1;
             display: flex;
             align-items: center;
@@ -149,26 +171,57 @@ label {
             border: 1px solid transparent;
         }
 
+        .cal-day.empty {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Dias com horários na grade: fundo azul claro (sem bolinha) */
+        .cal-day.has-slots {
+            background: rgba(0, 163, 255, 0.14);
+            border-color: rgba(0, 163, 255, 0.45);
+            color: #bae6fd;
+            font-weight: 600;
+        }
+
         .cal-day:hover { 
             background: var(--border);
             border-color: var(--primary);
         }
 
+        .cal-day.has-slots:hover {
+            background: rgba(0, 163, 255, 0.24);
+            border-color: rgba(0, 163, 255, 0.65);
+            color: #e0f2fe;
+        }
+
+        /* Dia selecionado na exploração da grade: azul forte */
         .cal-day.active { 
             background: var(--primary); 
             color: white; 
             font-weight: bold; 
             box-shadow: 0 0 15px rgba(0, 163, 255, 0.4);
+            border-color: transparent;
         }
 
-        .cal-day.has-slots::after {
-            content: '';
-            position: absolute;
-            bottom: 6px;
-            width: 4px;
-            height: 4px;
-            background: var(--primary);
-            border-radius: 50%;
+        .cal-day.active:hover {
+            background: var(--primary-hover);
+            color: white;
+            border-color: transparent;
+        }
+
+        .btn-excluir-dia {
+            border-radius: 12px;
+            border: 1px solid var(--danger);
+            color: #ffb4b4;
+            background: rgba(255, 77, 77, 0.1);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-excluir-dia:hover {
+            background: var(--danger);
+            color: #fff;
         }
 
         .grade-pill {
@@ -185,6 +238,17 @@ label {
 
         /* Tabela de Agendamentos */
         .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+        .table-custom thead th {
+            padding: 0 20px 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border: none;
+            text-align: left;
+        }
+        .table-custom thead th:last-child { text-align: right; }
         .table-custom tr { background: var(--bg-accent); transition: transform 0.2s ease; }
         .table-custom tr:hover { transform: scale(1.01); background: #1c2738; }
         .table-custom td { padding: 20px; border: none; vertical-align: middle; }
@@ -226,7 +290,7 @@ label {
         <span class="text-muted small d-none d-md-inline">Admin: <strong>Gustavo</strong></span>
     </div>
     <div class="d-flex gap-2">
-        <a href="/chat" class="btn btn-primary">
+        <a href="/" class="btn btn-primary">
             <i class="bi bi-chat-dots"></i> CHAT
         </a>
     <button onclick="logout()" class="btn btn-danger">
@@ -235,7 +299,22 @@ label {
 </div>
 </nav>
 
-<div class="container mt-5">
+<div class="container mt-4">
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card-glass py-3 text-center mb-0"><div class="text-muted small text-uppercase">Hoje</div><div class="h4 text-primary mb-0 fw-bold" id="dash-hoje">—</div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-glass py-3 text-center mb-0"><div class="text-muted small text-uppercase">Amanhã</div><div class="h4 text-primary mb-0 fw-bold" id="dash-amanha">—</div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-glass py-3 text-center mb-0"><div class="text-muted small text-uppercase">7 dias</div><div class="h4 text-white mb-0 fw-bold" id="dash-semana">—</div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card-glass py-3 text-center mb-0"><div class="text-muted small text-uppercase">Horários livres</div><div class="h4 text-white mb-0 fw-bold" id="dash-livres">—</div></div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-lg-4">
             <div class="card-glass">
@@ -243,6 +322,14 @@ label {
                 <div class="mb-3">
                     <label class="text-muted small mb-2">Selecione a Data</label>
                     <input type="date" id="g-data" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small mb-2">Intervalo entre horários</label>
+                    <select id="g-intervalo" class="form-control">
+                        <option value="30">30 minutos</option>
+                        <option value="45">45 minutos</option>
+                        <option value="60" selected>60 minutos</option>
+                    </select>
                 </div>
                 <div class="row g-3 mb-4">
                     <div class="col">
@@ -254,7 +341,12 @@ label {
                         <input type="time" id="g-fim" class="form-control" value="18:00">
                     </div>
                 </div>
-                <button class="btn btn-primary-custom w-100" onclick="gerarGrade()">Criar Horários</button>
+                <button class="btn btn-primary-custom w-100" onclick="gerarGrade()">Criar Horários (um dia)</button>
+                <p class="text-muted small mt-3 mb-2">Usa a <strong>data</strong> acima e os horários de início/fim para um único dia.</p>
+                <button type="button" class="btn btn-outline-month w-100" onclick="gerarGradeMes()">
+                    <i class="bi bi-calendar-week"></i> Gerar grade do mês do calendário
+                </button>
+                <p class="text-muted small mt-2 mb-0">Aplica a mesma faixa (início/fim) a <strong>todos os dias</strong> do mês exibido em &quot;Explorar Grade&quot; abaixo.</p>
             </div>
 
             <div class="card-glass">
@@ -272,23 +364,74 @@ label {
                 <div id="calendar-days" class="calendar-grid"></div>
 
                 <div id="box-horarios" class="mt-4 d-none animate__animated animate__fadeIn">
-                    <p class="small text-muted mb-3">Vagas para <span id="data-view" class="text-white fw-bold">--/--</span>:</p>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <p class="small text-muted mb-0">Vagas para <span id="data-view" class="text-white fw-bold">--/--</span>:</p>
+                        <button type="button" id="btn-excluir-dia" class="btn btn-sm btn-excluir-dia d-none" onclick="excluirDiaInteiro()">
+                            <i class="bi bi-calendar-x"></i> Excluir dia inteiro da grade
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-3" id="hint-excluir-dia">Remove todos os horários <strong>livres</strong> deste dia. Horários com cliente agendado não são apagados.</p>
                     <div id="lista-vagas" class="d-flex flex-wrap gap-2"></div>
                 </div>
+            </div>
+
+            <div class="card-glass">
+                <div class="section-title"><i class="bi bi-bag-heart-fill"></i> Serviços (landing)</div>
+                <div id="lista-servicos-admin" class="small mb-3"></div>
+                <div class="border-top border-secondary pt-3 mt-2">
+                    <label class="text-muted small d-block mb-2">Novo / editar (ID opcional)</label>
+                    <input type="hidden" id="svc-edit-id" value="">
+                    <input type="text" id="svc-nome" class="form-control mb-2" placeholder="Nome">
+                    <div class="row g-2 mb-2">
+                        <div class="col-6"><input type="number" id="svc-preco" class="form-control" placeholder="Preço (R$)" step="0.01"></div>
+                        <div class="col-6"><input type="number" id="svc-duracao" class="form-control" placeholder="Duração (min)"></div>
+                    </div>
+                    <input type="text" id="svc-img" class="form-control mb-2" placeholder="/static/img/....jpg">
+                    <button type="button" class="btn btn-primary-custom w-100" onclick="salvarServicoForm()">Salvar serviço</button>
+                </div>
+            </div>
+
+            <div class="card-glass">
+                <div class="section-title"><i class="bi bi-slash-circle"></i> Dias bloqueados</div>
+                <p class="text-muted small">Folgas e feriados: a landing não oferece agenda nesses dias.</p>
+                <div class="d-flex gap-2 mb-3">
+                    <input type="date" id="blk-data" class="form-control">
+                    <button type="button" class="btn btn-outline-danger flex-shrink-0" onclick="bloquearDia()">Bloquear</button>
+                </div>
+                <div id="lista-bloqueios" class="small"></div>
+            </div>
+
+            <div class="card-glass">
+                <div class="section-title"><i class="bi bi-key-fill"></i> Alterar senha</div>
+                <input type="password" id="pw-atual" class="form-control mb-2" placeholder="Senha atual" autocomplete="current-password">
+                <input type="password" id="pw-nova" class="form-control mb-2" placeholder="Nova senha (mín. 6)" autocomplete="new-password">
+                <button type="button" class="btn btn-primary-custom w-100" onclick="alterarSenhaAdmin()">Atualizar senha</button>
             </div>
         </div>
 
         <div class="col-lg-8">
             <div class="card-glass h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="section-title mb-0"><i class="bi bi-stars"></i> Agendamentos Ativos</div>
-                    <span class="badge rounded-pill bg-primary" style="font-size: 0.7rem;" id="count-agendamentos">0 Ativos</span>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <div class="section-title mb-0"><i class="bi bi-stars"></i> Agendamentos</div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <input type="search" id="filtro-ag" class="form-control form-control-sm" style="min-width:180px;max-width:240px;" placeholder="Buscar nome, tel, serviço...">
+                        <a id="btn-export-csv" class="btn btn-sm btn-outline-light" href="#" onclick="exportarCsv(event)"><i class="bi bi-download"></i> CSV</a>
+                        <span class="badge rounded-pill bg-primary" style="font-size: 0.7rem;" id="count-agendamentos">0</span>
+                    </div>
                 </div>
                 
                 <div class="table-responsive">
                     <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Data e horário</th>
+                                <th>Cliente</th>
+                                <th>Serviço</th>
+                                <th></th>
+                            </tr>
+                        </thead>
                         <tbody id="lista-clientes">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -296,6 +439,7 @@ label {
     </div>
 </div>
 
+<script src="/static/js/phd-ui.js"></script>
 <script>
     // Configuração de URL dinâmica para Local e Deploy
     const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
@@ -305,71 +449,299 @@ label {
     const token = localStorage.getItem('token_phd');
     let dataCalendario = new Date();
     let gradeDados = {};
+    /** Data YYYY-MM-DD do dia aberto em "Explorar Grade" */
+    let diaExplorando = null;
 
     // --- AJUSTE DE SEGURANÇA E REDIRECIONAMENTO ---
-    // Se não houver token, volta para a raiz (/) onde está o login
+    // Sem token: vai para a página de login (a raiz / é a landing pública)
     if (!token) {
-        window.location.href = "/";
+        window.location.href = "/login";
     }
 
     function logout() { 
         localStorage.removeItem('token_phd'); 
-        window.location.href = "/"; // Volta para a rota do Flask
+        window.location.href = "/login";
+    }
+
+    let agendamentosCache = [];
+
+    async function carregarDashboard() {
+        try {
+            const res = await fetch(`${API_URL}/admin/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
+            if (!res.ok) return;
+            const j = await res.json();
+            document.getElementById("dash-hoje").innerText = j.agendamentos_hoje ?? "—";
+            document.getElementById("dash-amanha").innerText = j.agendamentos_amanha ?? "—";
+            document.getElementById("dash-semana").innerText = j.agendamentos_proximos_7_dias ?? "—";
+            document.getElementById("dash-livres").innerText = j.horarios_livres ?? "—";
+        } catch (e) { console.error(e); }
+    }
+
+    function renderTabelaAgendamentos() {
+        const lista = document.getElementById("lista-clientes");
+        const countElem = document.getElementById("count-agendamentos");
+        const q = ((document.getElementById("filtro-ag") || {}).value || "").toLowerCase().trim();
+        let items = Array.isArray(agendamentosCache) ? agendamentosCache.slice() : [];
+        if (q) {
+            items = items.filter(a => {
+                const blob = `${a.nome} ${a.telefone} ${a.tipo_servico || ""} ${a.data_hora || ""}`.toLowerCase();
+                return blob.includes(q);
+            });
+        }
+        items.sort((a, b) => new Date(a.data_hora_iso || a.data_hora) - new Date(b.data_hora_iso || b.data_hora));
+        if (countElem) countElem.innerText = String(items.length);
+        if (!items.length) {
+            lista.innerHTML = '<tr><td colspan="4" class="text-center p-5 text-muted border-0">Nenhum agendamento encontrado.</td></tr>';
+            return;
+        }
+        lista.innerHTML = "";
+        items.forEach(a => {
+            const dt = new Date(a.data_hora_iso || a.data_hora);
+            const labelServico = (a.tipo_servico && String(a.tipo_servico).trim()) ? a.tipo_servico : "—";
+            lista.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="fw-bold text-white">${dt.toLocaleDateString("pt-BR")}</div>
+                        <div class="client-info"><i class="bi bi-clock"></i> ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
+                    </td>
+                    <td>
+                        <div class="client-name">${a.nome}</div>
+                        <a href="https://wa.me/55${String(a.telefone).replace(/\D/g, "")}" target="_blank" class="text-success small text-decoration-none fw-bold">
+                            <i class="bi bi-whatsapp"></i> ${a.telefone}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="fw-semibold text-white" style="font-size: 0.95rem;">
+                            <i class="bi bi-tag-fill text-primary me-1"></i>${labelServico}
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <button class="btn btn-action ms-auto" onclick="deletarAgendamento(${a.id})">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </td>
+                </tr>`;
+        });
     }
 
     async function carregarDados() {
         try {
-            // Busca horários disponíveis (público)
-            const resG = await fetch(`${API_URL}/agendamentos/horarios`);
+            const resG = await fetch(`${API_URL}/agendamentos/horarios?modo=admin`);
             gradeDados = await resG.json();
             renderCalendario();
-            
-            // Busca agendamentos de clientes (protegido por token)
-            const resA = await fetch(`${API_URL}/admin/agendamentos`, { 
-                headers: {'Authorization': `Bearer ${token}`} 
-            });
 
-            // Se o token expirou ou for inválido, o servidor retorna 401
+            const resA = await fetch(`${API_URL}/admin/agendamentos`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             if (resA.status === 401) {
                 logout();
                 return;
             }
-
             const agendamentos = await resA.json();
-            
-            const lista = document.getElementById('lista-clientes');
-            const countElem = document.getElementById('count-agendamentos');
-            
-            if (countElem) countElem.innerText = `${agendamentos.length} Ativos`;
-            
-            lista.innerHTML = agendamentos.length ? '' : '<div class="text-center p-5 text-muted">Nenhum agendamento encontrado.</div>';
-            
-            agendamentos.forEach(a => {
-                const dt = new Date(a.data_hora);
-                lista.innerHTML += `
-                    <tr>
-                        <td>
-                            <div class="fw-bold text-white">${dt.toLocaleDateString('pt-BR')}</div>
-                            <div class="client-info"><i class="bi bi-clock"></i> ${dt.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</div>
-                        </td>
-                        <td>
-                            <div class="client-name">${a.nome}</div>
-                            <a href="https://wa.me/55${a.telefone.replace(/\D/g,'')}" target="_blank" class="text-success small text-decoration-none fw-bold">
-                                <i class="bi bi-whatsapp"></i> ${a.telefone}
-                            </a>
-                        </td>
-                        <td class="text-end">
-                            <button class="btn btn-action ms-auto" onclick="deletarAgendamento(${a.id})">
-                                <i class="bi bi-trash3-fill"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-        } catch (e) { 
-            console.error("Erro ao carregar dados", e); 
+            agendamentosCache = Array.isArray(agendamentos) ? agendamentos : [];
+            renderTabelaAgendamentos();
+            await carregarDashboard();
+        } catch (e) {
+            console.error("Erro ao carregar dados", e);
         }
     }
+
+    async function exportarCsv(e) {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${API_URL}/admin/agendamentos/export.csv`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.status === 401) {
+                logout();
+                return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "agendamentos.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            phdUI.toast("Erro ao exportar CSV.", "error");
+        }
+    }
+
+    async function loadServicosAdmin() {
+        const el = document.getElementById("lista-servicos-admin");
+        if (!el) return;
+        try {
+            const res = await fetch(`${API_URL}/admin/servicos`, { headers: { Authorization: `Bearer ${token}` } });
+            if (!res.ok) throw new Error();
+            const list = await res.json();
+            window.__servicosList = list;
+            el.innerHTML = list.length
+                ? list.map(s => {
+                    const r = (s.preco_centavos / 100).toFixed(2).replace(".", ",");
+                    const st = s.ativo ? "" : " <span class='text-warning'>(inativo)</span>";
+                    return `<div class="d-flex justify-content-between align-items-center border-bottom border-secondary py-2">
+                        <div><strong>${s.nome}</strong>${st}<br><span class="text-muted">R$ ${r} · ${s.duracao_minutos} min</span></div>
+                        <button type="button" class="btn btn-sm btn-outline-light" onclick="editarServico(${s.id})">Editar</button>
+                    </div>`;
+                }).join("")
+                : "<p class='text-muted'>Nenhum serviço.</p>";
+        } catch (e) {
+            el.innerHTML = "<p class='text-danger'>Erro ao listar serviços.</p>";
+        }
+    }
+
+    function editarServico(id) {
+        const s = (window.__servicosList || []).find(x => x.id === id);
+        if (s) preencherServico(s);
+    }
+
+    function preencherServico(s) {
+        document.getElementById("svc-edit-id").value = s.id;
+        document.getElementById("svc-nome").value = s.nome;
+        document.getElementById("svc-preco").value = (s.preco_centavos / 100).toFixed(2);
+        document.getElementById("svc-duracao").value = s.duracao_minutos;
+        document.getElementById("svc-img").value = s.imagem_path || "";
+    }
+
+    async function salvarServicoForm() {
+        const id = document.getElementById("svc-edit-id").value;
+        const nome = document.getElementById("svc-nome").value.trim();
+        const preco = parseFloat(String(document.getElementById("svc-preco").value).replace(",", ".")) || 0;
+        const duracao = parseInt(document.getElementById("svc-duracao").value, 10) || 60;
+        const imagem_path = document.getElementById("svc-img").value.trim();
+        if (!nome) {
+            phdUI.toast("Informe o nome do serviço.", "warning");
+            return;
+        }
+        const body = {
+            nome,
+            preco_centavos: Math.round(preco * 100),
+            duracao_minutos: duracao,
+            imagem_path,
+            ativo: true
+        };
+        try {
+            let res;
+            if (id) {
+                res = await fetch(`${API_URL}/admin/servicos/${id}`, {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+            } else {
+                res = await fetch(`${API_URL}/admin/servicos`, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+            }
+            const j = await res.json().catch(() => ({}));
+            if (res.ok) {
+                phdUI.toast(j.mensagem || "Salvo.", "success");
+                document.getElementById("svc-edit-id").value = "";
+                document.getElementById("svc-nome").value = "";
+                document.getElementById("svc-preco").value = "";
+                document.getElementById("svc-duracao").value = "";
+                document.getElementById("svc-img").value = "";
+                await loadServicosAdmin();
+            } else {
+                phdUI.toast(j.erro || "Erro ao salvar.", "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão.", "error");
+        }
+    }
+
+    async function loadBloqueios() {
+        const el = document.getElementById("lista-bloqueios");
+        if (!el) return;
+        try {
+            const res = await fetch(`${API_URL}/admin/dias-bloqueados`, { headers: { Authorization: `Bearer ${token}` } });
+            if (!res.ok) throw new Error();
+            const list = await res.json();
+            el.innerHTML = list.length
+                ? list.map(r => `<div class="d-flex justify-content-between align-items-center py-1 border-bottom border-secondary">
+                    <span>${r.data.split("-").reverse().join("/")} ${r.motivo ? "— " + r.motivo : ""}</span>
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="desbloquearDia('${r.data}')">Remover</button>
+                </div>`).join("")
+                : "<span class='text-muted'>Nenhum dia bloqueado.</span>";
+        } catch (e) {
+            el.innerHTML = "<span class='text-danger'>Erro.</span>";
+        }
+    }
+
+    async function bloquearDia() {
+        const data = document.getElementById("blk-data").value;
+        if (!data) {
+            phdUI.toast("Escolha a data.", "warning");
+            return;
+        }
+        try {
+            const res = await fetch(`${API_URL}/admin/dias-bloqueados`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ data })
+            });
+            const j = await res.json().catch(() => ({}));
+            if (res.ok) {
+                phdUI.toast("Dia bloqueado.", "success");
+                await loadBloqueios();
+                await carregarDados();
+            } else {
+                phdUI.toast(j.erro || "Erro.", "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão.", "error");
+        }
+    }
+
+    async function desbloquearDia(ds) {
+        try {
+            const res = await fetch(`${API_URL}/admin/dias-bloqueados/${ds}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                phdUI.toast("Dia liberado.", "success");
+                await loadBloqueios();
+                await carregarDados();
+            }
+        } catch (e) {
+            phdUI.toast("Erro.", "error");
+        }
+    }
+
+    async function alterarSenhaAdmin() {
+        const senha_atual = document.getElementById("pw-atual").value;
+        const senha_nova = document.getElementById("pw-nova").value;
+        if (senha_nova.length < 6) {
+            phdUI.toast("Nova senha muito curta.", "warning");
+            return;
+        }
+        try {
+            const res = await fetch(`${API_URL}/auth/alterar-senha`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ senha_atual, senha_nova })
+            });
+            const j = await res.json().catch(() => ({}));
+            if (res.ok) {
+                phdUI.toast(j.mensagem || "Senha alterada.", "success");
+                document.getElementById("pw-atual").value = "";
+                document.getElementById("pw-nova").value = "";
+            } else {
+                phdUI.toast(j.erro || "Não foi possível alterar.", "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão.", "error");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const f = document.getElementById("filtro-ag");
+        if (f) f.addEventListener("input", () => renderTabelaAgendamentos());
+    });
 
     function renderCalendario() {
         const grid = document.getElementById('calendar-days');
@@ -388,19 +760,25 @@ label {
 
         for (let dia = 1; dia <= ultimoDia; dia++) {
             const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-            const temVaga = gradeDados[dataStr] ? 'has-slots' : '';
-            grid.innerHTML += `<div class="cal-day ${temVaga}" onclick="verDia('${dataStr}', this)">${dia}</div>`;
+            const temVaga =
+                Array.isArray(gradeDados[dataStr]) && gradeDados[dataStr].length > 0
+                    ? "has-slots"
+                    : "";
+            grid.innerHTML += `<div class="cal-day ${temVaga}" data-data="${dataStr}" onclick="verDia('${dataStr}', this)">${dia}</div>`;
         }
     }
 
     function verDia(data, el) {
+        diaExplorando = data;
         document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('active'));
         el.classList.add('active');
         
         const box = document.getElementById('box-horarios');
         const dataView = document.getElementById('data-view');
+        const btnExcluirDia = document.getElementById('btn-excluir-dia');
         
         if (box) box.classList.remove('d-none');
+        if (btnExcluirDia) btnExcluirDia.classList.remove('d-none');
         if (dataView) dataView.innerText = data.split('-').reverse().join('/');
         
         const lista = document.getElementById('lista-vagas');
@@ -420,7 +798,10 @@ label {
 
     function mudarMes(n) { 
         dataCalendario.setMonth(dataCalendario.getMonth() + n); 
-        renderCalendario(); 
+        renderCalendario();
+        const box = document.getElementById("box-horarios");
+        if (box) box.classList.add("d-none");
+        diaExplorando = null;
     }
 
     async function gerarGrade() {
@@ -429,52 +810,222 @@ label {
         const fimInput = document.getElementById('g-fim').value;
 
         if (!dataInput || !inicioInput || !fimInput) {
-            alert("Preencha todos os campos da grade.");
+            phdUI.toast("Preencha data, horário inicial e final da grade.", "warning");
             return;
         }
 
+        const intervalo = document.getElementById("g-intervalo").value || "60";
         const p = new URLSearchParams({ 
             data: dataInput, 
             inicio: inicioInput, 
             fim: fimInput, 
-            intervalo: 60 
+            intervalo 
         });
 
-        const res = await fetch(`${API_URL}/admin/gerar-grade?${p}`, { 
-            method: 'POST', 
-            headers: {'Authorization': `Bearer ${token}`} 
+        try {
+            const res = await fetch(`${API_URL}/admin/gerar-grade?${p}`, { 
+                method: 'POST', 
+                headers: {'Authorization': `Bearer ${token}`} 
+            });
+
+            if (res.ok) {
+                let extra = "";
+                try {
+                    const j = await res.json();
+                    if (j.quantidade_criada !== undefined) {
+                        extra = j.quantidade_criada
+                            ? ` ${j.quantidade_criada} novo(s) horário(s).`
+                            : " Nenhum horário novo (já existiam nesses intervalos).";
+                    }
+                } catch (_) {}
+                await carregarDados();
+                phdUI.toast("Grade atualizada com sucesso!" + extra, "success");
+            } else {
+                let msg = "Erro ao gerar grade.";
+                try {
+                    const j = await res.json();
+                    if (j.erro) msg = j.erro;
+                } catch (_) {}
+                phdUI.toast(msg, "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão ao criar a grade.", "error");
+        }
+    }
+
+    async function gerarGradeMes() {
+        const inicioInput = document.getElementById('g-inicio').value;
+        const fimInput = document.getElementById('g-fim').value;
+
+        if (!inicioInput || !fimInput) {
+            phdUI.toast("Defina horário de início e fim no painel acima.", "warning");
+            return;
+        }
+
+        const ano = dataCalendario.getFullYear();
+        const mes = dataCalendario.getMonth() + 1;
+        const nomeMes = dataCalendario.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+
+        const intervalo = document.getElementById("g-intervalo").value || "60";
+        const ok = await phdUI.confirm({
+            title: "Gerar grade do mês inteiro",
+            message: `Serão criados horários em todos os dias de ${nomeMes}, das ${inicioInput} às ${fimInput} (intervalo de ${intervalo} min). Dias bloqueados e slots existentes serão ignorados.`,
+            confirmText: "Gerar mês",
+            cancelText: "Voltar",
+            danger: false
+        });
+        if (!ok) return;
+
+        const p = new URLSearchParams({
+            ano: String(ano),
+            mes: String(mes),
+            inicio: inicioInput,
+            fim: fimInput,
+            intervalo
         });
 
-        if (res.ok) {
-            carregarDados();
-            alert("Grade gerada com sucesso!");
-        } else {
-            alert("Erro ao gerar grade.");
+        try {
+            const res = await fetch(`${API_URL}/admin/gerar-grade-mes?${p}`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const j = await res.json().catch(() => ({}));
+
+            if (res.ok) {
+                let extra = "";
+                if (j.quantidade_criada !== undefined) {
+                    extra = j.quantidade_criada
+                        ? ` ${j.quantidade_criada} novo(s) horário(s) criados.`
+                        : " Nenhum horário novo (tudo já existia).";
+                }
+                await carregarDados();
+                phdUI.toast((j.mensagem || "Mês atualizado!") + extra, "success");
+            } else {
+                phdUI.toast(j.erro || "Erro ao gerar grade do mês.", "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão ao gerar o mês.", "error");
+        }
+    }
+
+    async function excluirDiaInteiro() {
+        if (!diaExplorando) return;
+
+        const ok = await phdUI.confirm({
+            title: "Excluir dia da grade",
+            message: "Todos os horários livres deste dia serão removidos. Horários com cliente agendado permanecem até você cancelar o agendamento.",
+            confirmText: "Excluir horários livres",
+            cancelText: "Voltar",
+            danger: true
+        });
+        if (!ok) return;
+
+        try {
+            const res = await fetch(
+                `${API_URL}/admin/horarios/dia?data=${encodeURIComponent(diaExplorando)}`,
+                { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+            );
+            const j = await res.json().catch(() => ({}));
+
+            if (res.ok) {
+                let msg = j.mensagem || "Dia atualizado.";
+                if (j.horarios_com_agendamento > 0) {
+                    msg += ` ${j.horarios_com_agendamento} horário(s) com agendamento mantido(s).`;
+                }
+                await carregarDados();
+                const el = document.querySelector(`#calendar-days .cal-day[data-data="${diaExplorando}"]`);
+                if (el) {
+                    el.classList.add("active");
+                    verDia(diaExplorando, el);
+                } else {
+                    document.getElementById("box-horarios").classList.add("d-none");
+                    diaExplorando = null;
+                }
+                phdUI.toast(msg, "success");
+            } else {
+                phdUI.toast(j.erro || "Não foi possível limpar o dia.", "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão ao excluir o dia.", "error");
         }
     }
 
     async function excluirGrade(id) {
-        if(confirm("Remover este horário disponível?")) {
-            await fetch(`${API_URL}/admin/grade/${id}`, { 
+        const ok = await phdUI.confirm({
+            title: "Remover horário",
+            message: "Este horário será excluído da grade. Clientes não poderão mais escolhê-lo.",
+            confirmText: "Remover",
+            cancelText: "Voltar",
+            danger: true
+        });
+        if (!ok) return;
+
+        try {
+            const res = await fetch(`${API_URL}/admin/grade/${id}`, { 
                 method: 'DELETE', 
                 headers: {'Authorization': `Bearer ${token}`} 
             });
-            carregarDados();
-            document.getElementById('box-horarios').classList.add('d-none');
+            if (res.ok) {
+                await carregarDados();
+                const el = diaExplorando
+                    ? document.querySelector(`#calendar-days .cal-day[data-data="${diaExplorando}"]`)
+                    : null;
+                if (el) {
+                    el.classList.add("active");
+                    verDia(diaExplorando, el);
+                } else {
+                    document.getElementById('box-horarios').classList.add('d-none');
+                }
+                phdUI.toast("Horário removido da grade.", "success");
+            } else {
+                let msg = "Não foi possível remover este horário.";
+                try {
+                    const j = await res.json();
+                    if (j.erro) msg = j.erro;
+                } catch (_) {}
+                phdUI.toast(msg, "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão ao remover o horário.", "error");
         }
     }
 
     async function deletarAgendamento(id) {
-        if(confirm("Deseja realmente cancelar este cliente?")) {
+        const ok = await phdUI.confirm({
+            title: "Cancelar cliente",
+            message: "O agendamento será cancelado e o horário voltará a ficar disponível para novos clientes.",
+            confirmText: "Cancelar agendamento",
+            cancelText: "Voltar",
+            danger: true
+        });
+        if (!ok) return;
+
+        try {
             const res = await fetch(`${API_URL}/admin/agendamentos/${id}`, { 
                 method: 'DELETE', 
                 headers: {'Authorization': `Bearer ${token}`} 
             });
-            if (res.ok) carregarDados();
+            if (res.ok) {
+                await carregarDados();
+                phdUI.toast("Agendamento cancelado com sucesso.", "success");
+            } else {
+                let msg = "Não foi possível cancelar este agendamento.";
+                try {
+                    const j = await res.json();
+                    if (j.erro) msg = j.erro;
+                } catch (_) {}
+                phdUI.toast(msg, "error");
+            }
+        } catch (e) {
+            phdUI.toast("Erro de conexão ao cancelar.", "error");
         }
     }
 
-    window.onload = carregarDados;
+    window.onload = async () => {
+        await carregarDados();
+        await loadServicosAdmin();
+        await loadBloqueios();
+    };
 </script>
 </body>
 </html>

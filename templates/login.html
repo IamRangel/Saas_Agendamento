@@ -9,15 +9,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <link rel="icon" type="image/png" href="/static/img/logo_aba.png">
+    <link rel="stylesheet" href="/static/css/theme.css">
 
     <style>
         :root {
             --primary: #00a3ff;
             --bg-main: #05070a;
             --bg-card: #0d121b;
+            --bg-accent: #161f2e;
             --border: #1e293b;
             --text-main: #ffffff;
             --text-muted: #94a3b8;
+            --danger: #ff4d4d;
+            --success: #00e676;
         }
 
         /* Isso vai forçar TODOS os textos que usam 'text-muted' a ficarem claros */
@@ -207,6 +213,7 @@ label {
     </div>
 </div>
 
+<script src="/static/js/phd-ui.js"></script>
 <script>
     // Configuração de URL dinâmica para Local e Deploy
     const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
@@ -252,7 +259,7 @@ label {
             }
         } catch (error) {
             console.error("Erro na conexão:", error);
-            alert("Não foi possível conectar ao servidor. Verifique se o Flask está rodando.");
+            phdUI.toast("Não foi possível conectar ao servidor. Verifique se o Flask está rodando.", "error");
         }
     };
 </script>

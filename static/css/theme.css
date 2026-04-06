@@ -1,0 +1,132 @@
+/* Tema compartilhado: Lash Design (landing, login, admin) */
+:root {
+    --primary: #00a3ff;
+    --primary-hover: #0077bb;
+    --bg-main: #05070a;
+    --bg-card: #0d121b;
+    --bg-accent: #161f2e;
+    --border: #1e293b;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --success: #00e676;
+    --danger: #ff4d4d;
+    --glass: rgba(13, 18, 27, 0.85);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+}
+
+body.theme-phd {
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+.card-glass {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary);
+}
+
+.form-control.theme-control {
+    background: var(--bg-main) !important;
+    border: 1px solid var(--border) !important;
+    color: white !important;
+    border-radius: 14px;
+    padding: 14px 18px;
+}
+
+.form-control.theme-control:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(0, 163, 255, 0.15);
+}
+
+.btn-primary-custom {
+    background: var(--primary);
+    border: none;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover:not(:disabled) {
+    background: var(--primary-hover);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 163, 255, 0.3);
+}
+
+.btn-primary-custom:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+.btn-loading::after {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+    animation: phd-spin 0.65s linear infinite;
+}
+
+@keyframes phd-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.skeleton-line {
+    height: 14px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--bg-accent) 25%,
+        #1e293b 50%,
+        var(--bg-accent) 75%
+    );
+    background-size: 200% 100%;
+    animation: phd-skel 1.2s ease-in-out infinite;
+}
+
+@keyframes phd-skel {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
